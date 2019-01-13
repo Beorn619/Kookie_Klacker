@@ -8,9 +8,14 @@ from typing import List, Dict, Tuple
 building_cost_multiplyer = 1.15
 building_sell_multiplyer = 4
 
+#Things to ask damour
+#Making building: BuildingGroup in def buy_building() and sell building too
+
+
 class Player:
     """Players can Buy, sell, and they start with 15 cookies"""
-    def __init__(self, name, ai):
+    def __init__(self, name: str, ai):
+        
         self.cookies = 2080
         self.total_cps = 0
         self.strategy = ai
@@ -23,28 +28,32 @@ class Player:
         
         
 
-    def buy_building(self, building, amount=1):
+    def buy_building(self, building, amount: int = 1):
         price = math.floor(building.base_cost*(building_cost_multiplyer**(self.owned_buildings[building]+amount) - building_cost_multiplyer**(self.owned_buildings[building]))/.15)+1
+        
         if building.can_buy == False:
             print(building.name)
             print("amount :", amount)
             raise Exception("You do not have the cookeis to buy this")
         print("Bought", amount, building.name)
+
         self.cookies -= price
         self.owned_buildings[building] += amount
         building.cps_total = self.owned_buildings[building]*building.cps_per
         building.next_cost = math.floor(building.base_cost*(building_cost_multiplyer**self.owned_buildings[building]))+1
 
         self.update_cps()
-        self.check_buy()
+        self.check_buy()   
         
-        
-    def sell_building(self, building, amount=1):
+    def sell_building(self, building, amount: int = 1):
         if self.owned_buildings[building] < amount:
             raise Exception("You are trying to sell more building than you have")
+        
         print("Sold", amount, building.name)
+
         self.owned_buildings[building] -= amount
         self.cookies += math.floor(building.next_cost/(building_sell_multiplyer**amount))
+
         if self.owned_buildings[building] != 0:
             building.next_cost = math.floor(building.base_cost*(building_cost_multiplyer**self.owned_buildings[building]))+1
         else:
@@ -61,12 +70,7 @@ class Player:
         self.total_cps = total
 
     def stats(self):
-        print("\n",self.name)
-        print("Cookies :", self.cookies)
-        print("Cookies per Second :", self.total_cps)
-        for building_type in self.owned_buildings.keys():
-            if self.owned_buildings[building_type] != 0:
-                print(building_type.name, ":", self.owned_buildings[building_type])
+        pass
 
 
     def check_buy(self):
@@ -74,19 +78,19 @@ class Player:
 
 
 
-class Bui(ABC):
+class BuildingGroup(ABC):
     def __init__(self, player: Player):
         self._player = player
     
     @abstractproperty
-    def base_cps(self):
+    def base_cps(self) -> int:
         raise NotImplementedError()
 
     @abstractproperty
     def upgrades(self) -> List['Upgrade']:
         raise NotImplementedError()
 
-    def cps(self, upgrade_count: int) -> float:
+    def cps_per(self, upgrade_count: int) -> float:
         return self.base_cps * (2**upgrade_count)
 
     @abstractmethod
@@ -97,8 +101,7 @@ class Upgrade:
     pass # TODO
 
 
-class Grandma(Bui):
+class Grandma(BuildingGroup):
     @property
     def base_cps(self):
         return 1
-
