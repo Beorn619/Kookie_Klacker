@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Dict
-from Kookie_Klacker import Player, BuildingType
+from Kookie_Klacker2 import Player, BuildingGroup
 
 class Strategy(ABC):
     @abstractmethod
-    def buy_buildings(self, player: Player) -> Dict[BuildingType, int]:
+    def buy_buildings(self, player: Player) -> Dict[BuildingGroup, int]:
         raise NotImplementedError()
 
     @abstractmethod
@@ -13,7 +13,7 @@ class Strategy(ABC):
 
 
 class KagazzieAI(Strategy):
-    def buy_buildings(self, player: Player) -> Dict[BuildingType, int]:
+    def buy_buildings(self, player: Player) -> Dict[BuildingGroup, int]:
         pass
 
     def buy_upgrades(self, player: Player):
@@ -21,7 +21,7 @@ class KagazzieAI(Strategy):
 
 
 class DumbFriendAI(Strategy):
-    def buy_buildings(self, player: Player) -> Dict[BuildingType, int]:
+    def buy_buildings(self, player: Player) -> Dict[BuildingGroup, int]:
         pass
 
     def buy_upgrades(self, player: Player):
