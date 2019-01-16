@@ -14,11 +14,11 @@ building_sell_multiplyer = 4
 
 class Player:
     """Players can Buy, sell, and they start with 15 cookies"""
-    def __init__(self, name: str, ai):
+    def __init__(self, name: str):
         
         self.cookies = 2080
         self.total_cps = 0
-        self.strategy = ai
+        #self.strategy = ai
 
         self.name = name
 
@@ -27,14 +27,15 @@ class Player:
         }#All building types : how many the player owns
         
         
-
-    def buy_building(self, building, amount: int = 1):
+"""
+    def buy_building(self, building: 'BuildingGroup', amount: int = 1):
+        
         price = math.floor(building.base_cost*(building_cost_multiplyer**(self.owned_buildings[building]+amount) - building_cost_multiplyer**(self.owned_buildings[building]))/.15)+1
         
         if building.can_buy == False:
             print(building.name)
             print("amount :", amount)
-            raise Exception("You do not have the cookeis to buy this")
+            raise Exception("You do not have the cookies to buy this")
         print("Bought", amount, building.name)
 
         self.cookies -= price
@@ -44,8 +45,10 @@ class Player:
 
         self.update_cps()
         self.check_buy()   
-        
-    def sell_building(self, building, amount: int = 1):
+  """
+     
+"""
+    def sell_building(self, building: 'BuildingGroup', amount: int = 1):
         if self.owned_buildings[building] < amount:
             raise Exception("You are trying to sell more building than you have")
         
@@ -62,7 +65,9 @@ class Player:
 
         self.update_cps()
         self.check_buy()
-            
+"""
+    def building_count(self, building: 'BuildingGroup') -> 'BuildingGroup':
+        return self.owned_buildings[building]
     def update_cps(self):
         total = 0
         for building_type in self.owned_buildings.keys():
@@ -85,23 +90,78 @@ class BuildingGroup(ABC):
     @abstractproperty
     def base_cps(self) -> int:
         raise NotImplementedError()
+    
+    @abstractmethod
+    def cps_func(self):
+        raise NotImplementedError()
 
     @abstractproperty
-    def upgrades(self) -> List['Upgrade']:
+    def upgrades(self) -> 'PathedUpgrade':
         raise NotImplementedError()
+
 
     def cps_per(self, upgrade_count: int) -> float:
         return self.base_cps * (2**upgrade_count)
 
+    @property
+    def next_cost(self):
+        return next_cost = math.ceil(self.base_cost*(self.building_cost_multiplyer**self.player.owned_buildings[building]))
+
     @abstractmethod
     def stats(self):
+        #TODO
         pass
-
-class Upgrade:
-    pass # TODO
-
+    
+    def upgrade():
+        self.upgrades.next()
+        self.player
+        
 
 class Grandma(BuildingGroup):
+    def __init__(self, player: Player):
+        BuildingGroup.__init__(self, player)
+
+
     @property
     def base_cps(self):
         return 1
+
+    def cps_func(player) -> 'cps':
+    return player.count(Grandma) * 4
+
+
+class PathedUpgrades:
+    def __init__(
+            self, 
+            name, 
+            cps_func 
+            base_price: int, 
+            reqs = [1,5,25,50,100,150,200,250,300,350,400], 
+            mults=[5,10,100,100,100,1000,1000,1000,1000,10000]):
+        self.name = name
+        self.reqs = reqs
+        self.mults = mults
+        self.base_price = base_price
+        self.price = base_price
+        self.cps_func
+
+
+    @property
+    def next_req(self):
+        return self.reqs[0] if self.reqs else None
+
+    @property
+    def next_mult(self):
+        return self.mults[0] self.mults else None
+
+    def next(self):
+        self.reqs.pop()
+        self.mults.pop()
+
+    def cps(player):
+        self.cps_func(player)        
+
+        
+
+class Upgrade:
+    pass
