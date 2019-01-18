@@ -2,18 +2,13 @@
 import math
 #from strategies import Strategy, KagazzieAI
 from abc import ABC, abstractmethod, abstractproperty
-from typing import List, Dict, Tuple
 
 
 building_cost_multiplyer = 1.15
 building_sell_multiplyer = 4
 
-#Things to ask damour
-#Making building: BuildingGroup in def buy_building() and sell building too
-
 
 class Player:
-    """Players can Buy, sell, and they start with 15 cookies"""
     def __init__(self, name: str):
         
         self.cookies = 2080
@@ -45,58 +40,54 @@ class Player:
     def stats(self):
         pass#TODO
 
-
     def check_buy(self):
         pass#TODO
+    
+    def count(self, building: 'BuildingGroup'):
+        return self.owned_buildings[building]
 
 
 
 class BuildingGroup(ABC):
-   def __init__(self, 
+    def __init__(self, 
         player: Player,
         name: str,
         base_cost: int,
-        cps: int
+        cps: int,
+        upgrades: 'PathedUpgrades'
         ):
         self._player = player
 
-        self. name = name
+        self.name = name
 
         self.base_cost = base_cost
-        self.next_cost = base_cost
-        
+
+
+        self.upgrade_count = 0
         self.base_cps = cps
-        self.cps_mult = 1
-    
-    @abstractproperty
-    def base_cps(self) -> int:
-        raise NotImplementedError()
-    
+
+        self.upgrades = upgrades
+
     @abstractmethod
-    def cps_func(self):
+    def cps_per(self):
         raise NotImplementedError()
-
-    @abstractproperty
-    def upgrades(self) -> 'PathedUpgrade':
-        raise NotImplementedError()
-
-
-    def cps_per(self, upgrade_count: int) -> float:
-        return self.base_cps * (2**upgrade_count)
 
     @property
     def next_cost(self):
-        #return math.ceil(self.base_cost*(self.building_cost_multiplyer**self.player.owned_buildings[building]))
-        pass #TODO
+        return math.ceil(self.base_cost*(building_cost_multiplyer**self._player.owned_buildings[self]))
+
+    @property
+    def next_req(self):
+        return self.upgrades.reqs[0] if self.upgrades.reqs else None
+
+    @property
+    def next_mult(self):
+        return self.upgrades.mults[0] if self.upgrades.mults else None
+
 
     @abstractmethod
     def stats(self):
-        #TODO
-        pass
-    
-    def upgrade(self):
-        self.upgrades.next()
-        self._player
+        raise NotImplementedError()
         
 
 class Grandma(BuildingGroup):
@@ -104,62 +95,63 @@ class Grandma(BuildingGroup):
         player: Player,
         name: str,
         base_cost: int,
-        cps: int
+        cps: int,
         ):
         
-        BuildingGroup.__init__(self, player, name, base_cost, cps)
+        upgrades = PathedUpgrades(name+'Upgrades', 1100)
+        BuildingGroup.__init__(self, player, name, base_cost, cps, upgrades)
         
-        cps_increase = {
-            1 : player.owned_buildings[Clicker]
-            1.01 : player.owned_buildings[Farm]
-        }
-        #The idea is that integers would get added to CPS for every other building type, floats would get multiplied with self.mult
-        #In this case grandma would be getting +1 cps per clicker
-        #and +1% for every farm
+        self.name = name
 
-        
+    def cps_per(self) -> int:
+        return self.base_cost*(2**self.upgrade_count)
+    
+    def upgrade(self):
+        self.upgrades.next()
+        self._player
 
 
-    @property
-    def base_cps(self):
-        return 1
+    
+    def stats(self):
+        print(self.name)
+        print("Base Cost:",self.base_cost)
+        print("Upgrade Count:",self.upgrade_count)
+        print("Base Cps:",self.base_cps)
+        print("Cps Per:", self.cps_per(self))
+        print("Next Cost:", self.next_cost(self))
+        print("Next Upgrade Req:", self.next_req(self))
+        print("Next Cost Multiplyer:", self.next_mult(self))
+        print("Base Upgrade Price:",self.upgrades.base_price)
 
-    def cps_func(self,player) -> 'cps':
-        return player.count(Grandma) * 4
 
 
 class PathedUpgrades:
     def __init__(
             self, 
-            name, 
-            cps_func,
+            name,
             base_price: int, 
             reqs = [1,5,25,50,100,150,200,250,300,350,400], 
-            mults=[5,10,100,100,100,1000,1000,1000,1000,10000]):
+            mults= [5, 50, 50000, 5000000, 500000000, 500000000000, 500000000000000, 500000000000000000, 500000000000000000000, 5000000000000000000000000]):
         self.name = name
         self.reqs = reqs
         self.mults = mults
         self.base_price = base_price
-        self.price = base_price
-        self.cps_func = cps_func
-
-
+    
+    @property
+    def next_price(self):
+        return self.base_price*self.mults[0]
+    
     @property
     def next_req(self):
-        return self.reqs[0] if self.reqs else None
-
-    @property
-    def next_mult(self):
-        return self.mults[0] if self.mults else None
-
+        return self.reqs[0]
+    
     def next(self):
         self.reqs.pop()
         self.mults.pop()
 
-    def cps(self, player):
-        self.cps_func(player)        
 
-        
+p = Player('Joe')
+g = Grandma(p, 'Grandma', 100, 1)
+g.stats()
 
-class Upgrade:
-    pass
+
