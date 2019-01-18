@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod, abstractproperty
 
 building_cost_multiplyer = 1.15
 building_sell_multiplyer = 4
-
+upgrades_till_cursor_add = 3
 
 class Player:
     def __init__(self, name: str):
@@ -96,16 +96,33 @@ class Player:
             building.stats()
             raise Exception("Not enough cookies to upgrade")
             
-        elif building.upgrades.can_upgrade:
+        if building.upgrades.can_upgrade:
+            building.upgrade()
+        else:
             self.stats()
             building.stats()
             raise Exception("There are no more upgrades to buy")
-        building.upgrade()
 
     @property
     def cookies_per_click(self):
-        pass
-        #TODO
+        return self.non_cursor_buildings*self.cookies_per_building
+    
+    @property
+    def non_cursor_buildings(self):
+        total_buildings = 0
+        for building in self.owned_buildings:
+            if building.name != 'Cursor':
+                total_buildings += self.building_count(building)
+        return total_buildings
+    
+    @property
+    def cookies_per_building(self):
+        """Relevent to Cursor and Cookies per click"""
+        cps_add = 0
+        cps_add_constants = (0.1, 0.5, 5, 50, 500, 5000, 50000, 500000, 5000000)
+        for i in range(self.upgrade_count-upgrades_till_cursor_add):
+            cps_add += cps_add_constants[i]
+        return cps_add
 
 class BuildingGroup(ABC):
     def __init__(self, 
@@ -129,7 +146,7 @@ class BuildingGroup(ABC):
 
     @property
     def cps_per(self) -> int:
-        return self.base_cost*(2**self.upgrade_count)
+        return self.base_cps*(2**self.upgrade_count)
 
     @property
     def next_cost(self):
@@ -211,22 +228,13 @@ class Cursor(BuildingGroup):
     
     @property
     def cps_per(self):
-        upgrades_till_add = 3
-        if upgrades_till_add >= self.upgrade_count:
+        if upgrades_till_cursor_add >= self.upgrade_count:#If upgrades work normally
             cps = self.base_cps*(2**self.upgrade_count)
-        else:
-            cps = self.base_cps*(2**upgrades_till_add)
+        else:#If you need to start add flat amounts
+            cps = self.base_cps*(2**upgrades_till_cursor_add)
 
-            total_buildings = 0
-
-            cps_add = 0
-            cps_add_constants = (0.1, 0.5, 5, 50, 500, 5000, 50000, 500000, 5000000)
-            for i in range(self.upgrade_count-upgrades_till_add):
-                cps_add += cps_add_constants[i]
-            
-            for building in self._player.owned_buildings:
-                if building != Cursor:
-                    total_buildings += self._player.building_count(building)
+            total_buildings = self._player.non_cursor_building
+            cps_add = self._player.cookies_per_building
             cps += total_buildings*cps_add
         return cps
 
@@ -262,8 +270,3 @@ class PathedUpgrades:
             return False
 
 p = Player('Joe')
-p.buy_building(p.grandma, 100)
-
-p.stats()
-p.grandma.stats()
-p.farm.stats()
