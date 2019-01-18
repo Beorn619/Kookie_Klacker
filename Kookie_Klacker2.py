@@ -52,8 +52,21 @@ class Player:
 
 
 class BuildingGroup(ABC):
-    def __init__(self, player: Player):
+   def __init__(self, 
+        player: Player,
+        name: str,
+        base_cost: int,
+        cps: int
+        ):
         self._player = player
+
+        self. name = name
+
+        self.base_cost = base_cost
+        self.next_cost = base_cost
+        
+        self.base_cps = cps
+        self.cps_mult = 1
     
     @abstractproperty
     def base_cps(self) -> int:
@@ -94,15 +107,17 @@ class Grandma(BuildingGroup):
         cps: int
         ):
         
-        BuildingGroup.__init__(self, player)
-        self. name = name
-        self._player = player
-
-        self.base_cost = base_cost
-        self.next_cost = base_cost
+        BuildingGroup.__init__(self, player, name, base_cost, cps)
         
-        self.base_cps = cps
-        self.cps_mult = 1
+        cps_increase = {
+            1 : player.owned_buildings[Clicker]
+            1.01 : player.owned_buildings[Farm]
+        }
+        #The idea is that integers would get added to CPS for every other building type, floats would get multiplied with self.mult
+        #In this case grandma would be getting +1 cps per clicker
+        #and +1% for every farm
+
+        
 
 
     @property
