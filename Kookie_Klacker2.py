@@ -152,20 +152,6 @@ class BuildingGroup(ABC):
     @property
     def next_cost(self):
         return math.ceil(self.base_cost*(building_cost_multiplyer**self._player.owned_buildings[self]))
-
-    @property
-    def next_req(self):
-        if self.upgrades.reqs != []:
-            return self.upgrades.reqs[0]
-        else:
-            return 0
-
-    @property
-    def next_mult(self) -> int:
-        if self.upgrades.mults != []:
-            return self.upgrades.mults[0]
-        else:
-            return 0
     
     @property
     def can_upgrade(self) -> bool:
@@ -173,7 +159,7 @@ class BuildingGroup(ABC):
             return False
         elif self._player.cookies <= self.upgrades.next_cost:
             return False
-        elif self.next_req > self._player.building_count(self):
+        elif self.upgrades.next_req > self._player.building_count(self):
             return False
         else:
             return True
@@ -203,8 +189,8 @@ class BuildingGroup(ABC):
         print("Cps Per:", self.cps_per)
         print("Next Cost:", self.next_cost)
         print("Base Upgrade Price:",self.upgrades.base_price)
-        print("Next Upgrade Cost Multiplyer:", self.next_mult)
-        print("Next Upgrade Req:", self.next_req)
+        print("Next Upgrade Cost Multiplyer:", self.upgrades.next_mult)
+        print("Next Upgrade Req:", self.upgrades.next_req)
         print("Can Buy:", self.can_buy)
         print("Can Upgrade:", self.can_upgrade)
 
@@ -266,8 +252,22 @@ class PathedUpgrades:
     
     @property
     def next_cost(self):
-        return self.base_price*self.mults[0]
+        return self.base_price*self.next_mult
     
+    @property
+    def next_req(self):
+        if self.reqs != []:
+            return self.reqs[0]
+        else:
+            return 0
+    
+    @property
+    def next_mult(self) -> int:
+        if self.mults != []:
+            return self.mults[0]
+        else:
+            return 0
+
     def next(self):
         del self.reqs[0]
         del self.mults[0]
