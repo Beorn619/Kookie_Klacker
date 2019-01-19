@@ -1,6 +1,6 @@
 #Kookie Klacker2
 import math
-#from strategies import Strategy, KagazzieAI
+from strategies import KagazzieAI
 from abc import ABC, abstractmethod, abstractproperty
 
 
@@ -12,7 +12,7 @@ clicks_per_second = 3
 class Player:
     def __init__(self, name: str):
 
-        self.cookies = 0
+        self.cookies = 999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
         #self.strategy = ai
 
         self.name = name
@@ -93,17 +93,12 @@ class Player:
         print("Cookies:", self.cookies)
     
     def upgrade_building(self, building: 'BuildingGroup'):
-        if self.cookies < building.upgrades.next_cost:
-            self.stats()
-            building.stats()
-            raise Exception("Not enough cookies to upgrade")
-            
-        if building.upgrades.can_upgrade:
+        if building.can_upgrade:
             building.upgrade()
         else:
             self.stats()
             building.stats()
-            raise Exception("There are no more upgrades to buy")
+            raise Exception("You cannot upgrade this building")
 
     @property
     def cookies_per_click(self):
@@ -127,9 +122,8 @@ class Player:
         return cps_add
 
     def update(self): #TODO
-        self.cookies += self.total_cps + (clicks_per_second*self.cookies_per_click)
+        self.cookies += (self.total_cps + (clicks_per_second*self.cookies_per_click))/60
         #run ai
-        
 
 class BuildingGroup(ABC):
     def __init__(self, 
@@ -161,18 +155,28 @@ class BuildingGroup(ABC):
 
     @property
     def next_req(self):
-        return self.upgrades.reqs[0] if self.upgrades.reqs else None
+        if self.upgrades.reqs != []:
+            return self.upgrades.reqs[0]
+        else:
+            return 0
 
     @property
     def next_mult(self) -> int:
-        return self.upgrades.mults[0] if self.upgrades.mults else None
+        if self.upgrades.mults != []:
+            return self.upgrades.mults[0]
+        else:
+            return 0
     
     @property
     def can_upgrade(self) -> bool:
-        if self._player.cookies >= self.upgrades.next_price:
-            return True
-        else:
+        if self.upgrades.reqs == []:
             return False
+        elif self._player.cookies <= self.upgrades.next_cost:
+            return False
+        elif self.next_req > self._player.building_count(self):
+            return False
+        else:
+            return True
 
     @property
     def can_buy(self) -> bool:
@@ -182,8 +186,11 @@ class BuildingGroup(ABC):
             return False
     
     def upgrade(self):
-        self.upgrades.next()
-        self.upgrade_count += 1
+        if self.can_upgrade:
+            self.upgrades.next()
+            self.upgrade_count += 1
+        else:
+            raise Exception("You cannot upgrade this.")
 
     def multiple_price(self, amount:int):
         return math.ceil(self.base_cost*(building_cost_multiplyer**(self._player.owned_buildings[self]+amount)-(building_cost_multiplyer**(self._player.owned_buildings[self]))))
@@ -258,16 +265,12 @@ class PathedUpgrades:
         self.base_price = base_price
     
     @property
-    def next_price(self):
+    def next_cost(self):
         return self.base_price*self.mults[0]
     
-    @property
-    def next_req(self):
-        return self.reqs[0]
-    
     def next(self):
-        self.reqs.pop()
-        self.mults.pop()
+        del self.reqs[0]
+        del self.mults[0]
     
     @property
     def can_upgrade(self):
@@ -277,10 +280,8 @@ class PathedUpgrades:
             return False
 
 def main():
-    p = Player('Joe')
+    joe = Player('Joe')
     tick = 0
     while True:
         tick += 1
-        p.update()
-
-main()
+        joe.update()
