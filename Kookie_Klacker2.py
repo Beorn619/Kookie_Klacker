@@ -7,11 +7,12 @@ from abc import ABC, abstractmethod, abstractproperty
 building_cost_multiplyer = 1.15
 building_sell_multiplyer = 4
 upgrades_till_cursor_add = 3
+clicks_per_second = 3
 
 class Player:
     def __init__(self, name: str):
 
-        self.cookies = 999999999999999
+        self.cookies = 0
         #self.strategy = ai
 
         self.name = name
@@ -79,6 +80,7 @@ class Player:
     
     @property
     def total_cps(self):
+        cps = 0
         for building in self.owned_buildings:
             cps += self.building_count(building)*building.cps_per
         return cps
@@ -105,7 +107,7 @@ class Player:
 
     @property
     def cookies_per_click(self):
-        return self.non_cursor_buildings*self.cookies_per_building
+        return self.non_cursor_buildings*self.cookies_per_building + 1
     
     @property
     def non_cursor_buildings(self):
@@ -120,9 +122,14 @@ class Player:
         """Relevent to Cursor and Cookies per click"""
         cps_add = 0
         cps_add_constants = (0.1, 0.5, 5, 50, 500, 5000, 50000, 500000, 5000000)
-        for i in range(self.upgrade_count-upgrades_till_cursor_add):
+        for i in range(self.cursor.upgrade_count-upgrades_till_cursor_add):
             cps_add += cps_add_constants[i]
         return cps_add
+
+    def update(self): #TODO
+        self.cookies += self.total_cps + (clicks_per_second*self.cookies_per_click)
+        #run ai
+        
 
 class BuildingGroup(ABC):
     def __init__(self, 
@@ -269,4 +276,11 @@ class PathedUpgrades:
         else:
             return False
 
-p = Player('Joe')
+def main():
+    p = Player('Joe')
+    tick = 0
+    while True:
+        tick += 1
+        p.update()
+
+main()
