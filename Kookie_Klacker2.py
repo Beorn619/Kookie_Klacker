@@ -1,6 +1,6 @@
 #Kookie Klacker2
 import math
-from strategies import KagazzieAI
+import strategies
 from abc import ABC, abstractmethod, abstractproperty
 
 
@@ -10,14 +10,14 @@ upgrades_till_cursor_add = 3
 clicks_per_second = 3
 
 class Player:
-    def __init__(self, name: str):
+    def __init__(self, name: str, ai):
 
-        self.cookies = 999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
-        #self.strategy = ai
+        self.cookies = 0
 
         self.name = name
 
         self.owned_buildings = self.create_BuildingGroups()
+        self.tick = 0
     
     def create_BuildingGroups(self):
         self.cursor = Cursor(self, 'Cursor', 15, 0.1)
@@ -121,9 +121,11 @@ class Player:
             cps_add += cps_add_constants[i]
         return cps_add
 
-    def update(self): #TODO
-        self.cookies += (self.total_cps + (clicks_per_second*self.cookies_per_click))/60
-        #run ai
+    def update(self):
+        self.tick += 1
+        self.cookies += self.total_cps + (clicks_per_second*self.cookies_per_click)
+        #self.strategy.update(self)
+        #Put logic Code here
 
 class BuildingGroup(ABC):
     def __init__(self, 
@@ -152,7 +154,7 @@ class BuildingGroup(ABC):
     @property
     def next_cost(self):
         return math.ceil(self.base_cost*(building_cost_multiplyer**self._player.owned_buildings[self]))
-    
+
     @property
     def can_upgrade(self) -> bool:
         if self.upgrades.reqs == []:
@@ -271,17 +273,11 @@ class PathedUpgrades:
     def next(self):
         del self.reqs[0]
         del self.mults[0]
-    
-    @property
-    def can_upgrade(self):
-        if self.reqs:
-            return True
-        else:
-            return False
 
 def main():
-    joe = Player('Joe')
-    tick = 0
+    joe = Player('Joe', None)
     while True:
-        tick += 1
         joe.update()
+
+
+main()
