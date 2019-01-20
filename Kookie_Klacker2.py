@@ -15,8 +15,8 @@ class Player:
         self.cookies = 0
 
         self.name = name
-        ai.__init__(player=self)
-        self.strategy = ai
+        strategy = ai(self)
+        self.strategy = strategy
 
         self.owned_buildings = self.create_BuildingGroups()
         self.tick = 0
@@ -84,6 +84,7 @@ class Player:
         cps = 0
         for building in self.owned_buildings:
             cps += self.building_count(building)*building.cps_per
+        cps += (clicks_per_second*self.cookies_per_click)
         return cps
 
     def stats(self):
@@ -124,7 +125,7 @@ class Player:
 
     def update(self):
         self.tick += 1
-        self.cookies += self.total_cps + (clicks_per_second*self.cookies_per_click)
+        self.cookies += self.total_cps
         self.strategy.update()
 
 
