@@ -1,7 +1,7 @@
 #Kookie Klacker2
 import math, time
 from abc import ABC, abstractmethod, abstractproperty
-from strategies import KagazzieAI
+from strategies import KagazzieAI as ai
 
 
 building_cost_multiplyer = 1.15
@@ -125,8 +125,6 @@ class Player:
         self.tick += 1
         self.cookies += self.total_cps + (clicks_per_second*self.cookies_per_click)
         self.strategy.update(self, self)
-
-        self.stats()
         
 
 
@@ -279,7 +277,7 @@ class PathedUpgrades:
         del self.mults[0]
 
 def main():
-    joe = Player('Joe', KagazzieAI)
+    joe = Player('Joe', ai)
     start = time.time()
     while True:
         end = time.time()

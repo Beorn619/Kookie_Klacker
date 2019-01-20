@@ -9,5 +9,4 @@ class Strategy(ABC):
 
 class KagazzieAI(Strategy):
     def update(self, player):
-        if player.cursor.can_buy:
-            player.buy_building(player.cursor)
+        pass
