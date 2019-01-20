@@ -38,6 +38,26 @@ class Player:
         self.prism = DefaultBuilding(self, 'Prism', 2100000000000000.0, 2900000000.0)
         self.chance_maker = DefaultBuilding(self, 'Chance Maker', 26000000000000000.0, 21000000000.0)
         self.fractal_engine = DefaultBuilding(self, 'Fractal Engine', 310000000000000000.0, 150000000000.0)
+        
+        self.buildings = [
+            self.cursor, 
+            self.grandma, 
+            self.farm, 
+            self.mine, 
+            self.factory,
+            self.bank, 
+            self.temple, 
+            self.wizard_tower, 
+            self.shipment, 
+            self.alchemy_lab, 
+            self.portal,
+            self.time_machine,
+            self.antimatter_condenser,
+            self.prism,
+            self.chance_maker,
+            self.fractal_engine,
+            ]
+
         return {
             self.cursor: 0,
             self.grandma: 0,
@@ -91,7 +111,8 @@ class Player:
         print("\n",self.name)
         for building in self.owned_buildings:
             if self.building_count(building):
-                print(building,":", self.building_count(building))
+                print(building,"(",building.upgrade_count,")",":", self.building_count(building))
+        print("Cps:",self.total_cps)
         print("Cookies:", math.floor(self.cookies))
     
     def upgrade_building(self, building: 'BuildingGroup'):
@@ -104,7 +125,7 @@ class Player:
 
     @property
     def cookies_per_click(self):
-        return self.non_cursor_buildings*self.cookies_per_building + 1
+        return self.non_cursor_buildings*self.cookies_per_building() + 1
     
     @property
     def non_cursor_buildings(self):
@@ -114,12 +135,11 @@ class Player:
                 total_buildings += self.building_count(building)
         return total_buildings
     
-    @property
-    def cookies_per_building(self):
+    def cookies_per_building(self, extra_upgrades = 0):
         """Relevent to Cursor and Cookies per click"""
         cps_add = 0
         cps_add_constants = (0.1, 0.5, 5, 50, 500, 5000, 50000, 500000, 5000000)
-        for i in range(self.cursor.upgrade_count-upgrades_till_cursor_add):
+        for i in range(0,(self.cursor.upgrade_count+extra_upgrades)-upgrades_till_cursor_add,1):
             cps_add += cps_add_constants[i]
         return cps_add
 
@@ -152,6 +172,9 @@ class BuildingGroup(ABC):
     @property
     def cps_per(self) -> int:
         return self.base_cps*(2**self.upgrade_count)
+
+    def cps_per_after_upgrade(self, extra_upgrades = 1):
+        return self.base_cps*(2**(self.upgrade_count+extra_upgrades))
 
     @property
     def next_cost(self):
@@ -239,8 +262,19 @@ class Cursor(BuildingGroup):
         else:#If you need to start add flat amounts
             cps = self.base_cps*(2**upgrades_till_cursor_add)
 
-            total_buildings = self._player.non_cursor_building
-            cps_add = self._player.cookies_per_building
+            total_buildings = self._player.non_cursor_buildings
+            cps_add = self._player.cookies_per_building()
+            cps += total_buildings*cps_add
+        return cps
+    
+    def cps_per_after_upgrade(self, extra_upgrades = 1):
+        if upgrades_till_cursor_add >= (self.upgrade_count+extra_upgrades):#If upgrades work normally
+            cps = self.base_cps*(2**(self.upgrade_count+extra_upgrades))
+        else:#If you need to start add flat amounts
+            cps = self.base_cps*(2**upgrades_till_cursor_add)
+
+            total_buildings = self._player.non_cursor_buildings
+            cps_add = self._player.cookies_per_building(1)
             cps += total_buildings*cps_add
         return cps
 
@@ -266,7 +300,7 @@ class PathedUpgrades:
         if self.reqs != []:
             return self.reqs[0]
         else:
-            return 0
+            return None
     
     @property
     def next_mult(self) -> int:
@@ -280,14 +314,48 @@ class PathedUpgrades:
         del self.mults[0]
 
 
+
 def main():
     joe = Player('Joe', ai)
+    
+    
+    """
+    joe.cookies = 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+    joe.buy_building(joe.cursor, 400)
+    joe.upgrade_building(joe.cursor)
+    joe.stats()
+    joe.upgrade_building(joe.cursor)
+    joe.stats()
+    joe.upgrade_building(joe.cursor)
+    joe.stats()
+    joe.upgrade_building(joe.cursor)
+    joe.stats()
+    print(joe.cursor.cps_per)
+    print(joe.cursor.cps_per_after_upgrade())
+    joe.buy_building(joe.grandma)
+    print(joe.cursor.cps_per)
+    print(joe.cursor.cps_per_after_upgrade())
+    """
+    
+    #go at a constant speed
+    """
     start = time.time()
     while True:
         end = time.time()
-        if (end-start)>=1:
+        if (end-start)>=.001:
             joe.update()
             start = time.time()
-
-
+    """
+    #Go to a certain tick
+    
+    while True:
+        if joe.tick >= (10000):
+            joe.stats
+            break
+        else:
+            joe.update()
+    
+    
+#50664432
 main()
+
