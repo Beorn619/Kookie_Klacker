@@ -1,6 +1,6 @@
 #Kookie Klacker2
 import math, time
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC
 from strategies import KagazzieAI as ai
 
 
@@ -15,6 +15,7 @@ class Player:
         self.cookies = 0
 
         self.name = name
+        ai.__init__(self, self)
         self.strategy = ai
 
         self.owned_buildings = self.create_BuildingGroups()
@@ -125,8 +126,6 @@ class Player:
         self.tick += 1
         self.cookies += self.total_cps + (clicks_per_second*self.cookies_per_click)
         self.strategy.update(self)
-        
-
 
 
 class BuildingGroup(ABC):
@@ -200,7 +199,8 @@ class BuildingGroup(ABC):
 
     def __str__(self):
         return self.name
-        
+
+
 class DefaultBuilding(BuildingGroup):
     def __init__(self, 
         player: Player,
@@ -212,6 +212,7 @@ class DefaultBuilding(BuildingGroup):
         
         upgrades = PathedUpgrades(name+'Upgrades', base_cost*base_upgrade_cost_mult)
         BuildingGroup.__init__(self, player, name, base_cost, cps, upgrades)
+
 
 class Cursor(BuildingGroup):
     def __init__(self, 
@@ -241,6 +242,7 @@ class Cursor(BuildingGroup):
             cps_add = self._player.cookies_per_building
             cps += total_buildings*cps_add
         return cps
+
 
 class PathedUpgrades:
     def __init__(
@@ -276,6 +278,7 @@ class PathedUpgrades:
         del self.reqs[0]
         del self.mults[0]
 
+
 def main():
     joe = Player('Joe', ai)
     start = time.time()
@@ -284,7 +287,6 @@ def main():
         if (end-start)>=1:
             joe.update()
             start = time.time()
-
 
 
 main()

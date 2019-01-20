@@ -7,5 +7,7 @@ class Strategy(ABC):
         raise NotImplementedError()
 
 class KagazzieAI(Strategy):
+    def __init__(self, player):
+        self.player = player
     def update(self):
-        print(self.owned_buildings)
+        self.player.stats()
