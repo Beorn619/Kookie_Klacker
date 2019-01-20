@@ -1,5 +1,5 @@
 #Kookie Klacker2
-import math
+import math, time
 import strategies
 from abc import ABC, abstractmethod, abstractproperty
 
@@ -276,8 +276,14 @@ class PathedUpgrades:
 
 def main():
     joe = Player('Joe', None)
+    start = time.time()
     while True:
-        joe.update()
+        end = time.time()
+        if (end-start)>=1:
+            joe.update()
+            joe.stats()
+            start = time.time()
+
 
 
 main()
