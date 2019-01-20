@@ -1,7 +1,7 @@
 #Kookie Klacker2
 import math, time
-import strategies
 from abc import ABC, abstractmethod, abstractproperty
+from strategies import KagazzieAI
 
 
 building_cost_multiplyer = 1.15
@@ -15,6 +15,7 @@ class Player:
         self.cookies = 0
 
         self.name = name
+        self.strategy = ai
 
         self.owned_buildings = self.create_BuildingGroups()
         self.tick = 0
@@ -61,7 +62,6 @@ class Player:
             building.stats()
             raise Exception("You do not have enough cookies to buy this building")
             
-        
         self.cookies -= building.multiple_price(amount)
         self.owned_buildings[building] += amount
 
@@ -90,7 +90,7 @@ class Player:
         for building in self.owned_buildings:
             if self.building_count(building):
                 print(building,":", self.building_count(building))
-        print("Cookies:", self.cookies)
+        print("Cookies:", math.floor(self.cookies))
     
     def upgrade_building(self, building: 'BuildingGroup'):
         if building.can_upgrade:
@@ -124,8 +124,12 @@ class Player:
     def update(self):
         self.tick += 1
         self.cookies += self.total_cps + (clicks_per_second*self.cookies_per_click)
-        #self.strategy.update(self)
-        #Put logic Code here
+        self.strategy.update(self, self)
+
+        self.stats()
+        
+
+
 
 class BuildingGroup(ABC):
     def __init__(self, 
@@ -181,7 +185,7 @@ class BuildingGroup(ABC):
             raise Exception("You cannot upgrade this.")
 
     def multiple_price(self, amount:int):
-        return math.ceil(self.base_cost*(building_cost_multiplyer**(self._player.owned_buildings[self]+amount)-(building_cost_multiplyer**(self._player.owned_buildings[self]))))
+        return math.ceil(self.base_cost*(building_cost_multiplyer**(self._player.owned_buildings[self]+amount)-(building_cost_multiplyer**(self._player.owned_buildings[self])))/(0.15))
 
     def stats(self):
         print("\n",self.name)
@@ -275,13 +279,12 @@ class PathedUpgrades:
         del self.mults[0]
 
 def main():
-    joe = Player('Joe', None)
+    joe = Player('Joe', KagazzieAI)
     start = time.time()
     while True:
         end = time.time()
         if (end-start)>=1:
             joe.update()
-            joe.stats()
             start = time.time()
 
 
