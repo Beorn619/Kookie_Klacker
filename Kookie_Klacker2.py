@@ -15,7 +15,7 @@ class Player:
         self.cookies = 0
 
         self.name = name
-        ai.__init__(self, self)
+        ai.__init__(player=self)
         self.strategy = ai
 
         self.owned_buildings = self.create_BuildingGroups()
@@ -125,7 +125,7 @@ class Player:
     def update(self):
         self.tick += 1
         self.cookies += self.total_cps + (clicks_per_second*self.cookies_per_click)
-        self.strategy.update(self)
+        self.strategy.update()
 
 
 class BuildingGroup(ABC):
