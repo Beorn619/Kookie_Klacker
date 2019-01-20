@@ -124,7 +124,7 @@ class Player:
     def update(self):
         self.tick += 1
         self.cookies += self.total_cps + (clicks_per_second*self.cookies_per_click)
-        self.strategy.update(self, self)
+        self.strategy.update(self)
         
 
 
