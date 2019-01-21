@@ -10,10 +10,10 @@ upgrades_till_cursor_add = 3
 clicks_per_second = 3
 
 #Zero for no limit
-updates_per_second = 2
+updates_per_second = 0
 
 #Zero for no end
-ending_tick = 10
+ending_tick = 100
 
 class Player:
     def __init__(self, name: str, ai):
@@ -307,7 +307,30 @@ class PathedUpgrades:
         else:
             return None
 
+class GrandmaUpgrades:#TODO
+    pass
 
+class TotalUpgrades:#TODO
+    pass
+
+def calling_updates(players):
+    for player in players:
+        player.update()
+        if ending_tick:
+            if player.tick >= ending_tick:
+                player.stop = True
+                    
+def is_finished(players):
+    stop = True
+    for player in players:
+        if player.stop != True:
+            stop = False
+            break
+    return stop
+
+def hold(start):
+    if ((1/updates_per_second)-(time.time()-start))>0:
+        time.sleep((1/updates_per_second)-(time.time()-start))
 
 def main():
     joe = Player('Joe', ai)
@@ -320,31 +343,9 @@ def main():
             for player in players:
                 player.stats()
             break
-        hold(start)
+        if updates_per_second != 0:
+            hold(start)
     
-def calling_updates(players):
-    for player in players:
-        player.update()
-        if ending_tick:
-            if player.tick >= ending_tick:
-                player.stop = True
-                    
-
-def is_finished(players):
-    for player in players:
-        if player.stop == True:
-            del players[0]
-    if players == []:
-        return True
-    else:
-        return False
-
-def hold(start):
-    print((1/updates_per_second)-(time.time()-start))
-    if ((1/updates_per_second)-(time.time()-start))>0:
-        time.sleep((1/updates_per_second)-(time.time()-start))
-
-
 
 
 main()
