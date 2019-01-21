@@ -318,25 +318,6 @@ class PathedUpgrades:
 def main():
     joe = Player('Joe', ai)
     
-    
-    """
-    joe.cookies = 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
-    joe.buy_building(joe.cursor, 400)
-    joe.upgrade_building(joe.cursor)
-    joe.stats()
-    joe.upgrade_building(joe.cursor)
-    joe.stats()
-    joe.upgrade_building(joe.cursor)
-    joe.stats()
-    joe.upgrade_building(joe.cursor)
-    joe.stats()
-    print(joe.cursor.cps_per)
-    print(joe.cursor.cps_per_after_upgrade())
-    joe.buy_building(joe.grandma)
-    print(joe.cursor.cps_per)
-    print(joe.cursor.cps_per_after_upgrade())
-    """
-    
     #go at a constant speed
     """
     start = time.time()
@@ -347,7 +328,6 @@ def main():
             start = time.time()
     """
     #Go to a certain tick
-    
     while True:
         if joe.tick >= (10000):
             joe.stats
