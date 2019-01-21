@@ -18,9 +18,6 @@ class KagazzieAI(Strategy):
             self.target = self.choose_target(buildings_time_to_profit, upgrades_time_to_profit)
         if (self.player.tick % 10000) == 0:
             self.player.stats()
-            time.sleep(10)
-        elif (self.player.tick % 1000) == 0:
-            print(self.player.tick)
         self.target = self.attempt_to_buy(self.target)
 
     
@@ -52,18 +49,11 @@ class KagazzieAI(Strategy):
         for i in range(0,len(self.player.buildings)):
             if buildings_time_to_profit[i] < target_time:
                 target = [self.player.buildings[i], 'building']
-
                 target_time = buildings_time_to_profit[i]
-            print(upgrades_time_to_profit[i])
             if upgrades_time_to_profit[i]:
-                print(upgrades_time_to_profit[i])
-                #print(self.player.buildings[i].name, 'upgrade', upgrades_time_to_profit[i])
                 if upgrades_time_to_profit[i] < target_time:
                     target = [self.player.buildings[i], 'upgrade']
                     target_time = buildings_time_to_profit[i]
-            #print(target[0].name, target[1], target_time)
-            else:
-                print("None")
         return target
 
     def attempt_to_buy(self, target):

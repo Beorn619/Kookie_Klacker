@@ -200,7 +200,6 @@ class BuildingGroup(ABC):
     
     def upgrade(self):
         if self.can_upgrade:
-            self.upgrades.next()
             self.upgrade_count += 1
         else:
             raise Exception("You cannot upgrade this.")
@@ -234,7 +233,7 @@ class DefaultBuilding(BuildingGroup):
         base_upgrade_cost_mult: int = 10
         ):
         
-        upgrades = PathedUpgrades(name+'Upgrades', base_cost*base_upgrade_cost_mult)
+        upgrades = PathedUpgrades(name+'Upgrades',self, base_cost*base_upgrade_cost_mult)
         BuildingGroup.__init__(self, player, name, base_cost, cps, upgrades)
 
 
@@ -249,10 +248,10 @@ class Cursor(BuildingGroup):
         
         upgrades = PathedUpgrades(
         name+'Upgrades',
+        self,
         base_upgrade_cost,
         [1,1,10,25,50,100,150,200,250,300,350, 400],
-        [1, 5, 100, 1000, 100000, 1000000, 10000000, 100000000, 100000000000, 100000000000000, 100000000000000000, 100000000000000000000]
-        )
+        [1, 5, 100, 1000, 100000, 1000000, 10000000, 100000000, 100000000000, 100000000000000, 100000000000000000, 100000000000000000000])
         BuildingGroup.__init__(self, player, name, base_cost, cps, upgrades)
     
     @property
@@ -283,6 +282,7 @@ class PathedUpgrades:
     def __init__(
             self, 
             name,
+            building,
             base_price: int, 
             reqs = [1,5,25,50,100,150,200,250,300,350,400], 
             mults= [1, 5, 50, 50000, 5000000, 500000000, 500000000000, 500000000000000, 500000000000000000, 500000000000000000000, 5000000000000000000000000]):
@@ -290,6 +290,7 @@ class PathedUpgrades:
         self.reqs = reqs
         self.mults = mults
         self.base_price = base_price
+        self.building = building
     
     @property
     def next_cost(self):
@@ -297,27 +298,23 @@ class PathedUpgrades:
     
     @property
     def next_req(self):
-        if self.reqs != []:
-            return self.reqs[0]
+        if self.building.upgrade_count <= len(self.reqs):
+            return self.reqs[self.building.upgrade_count]
         else:
             return None
     
     @property
     def next_mult(self) -> int:
-        if self.mults != []:
-            return self.mults[0]
+        if self.building.upgrade_count <= len(self.mults):
+            return self.mults[self.building.upgrade_count]
         else:
-            return 0
-
-    def next(self):
-        del self.reqs[0]
-        del self.mults[0]
+            return None
 
 
 
 def main():
     joe = Player('Joe', ai)
-    
+
     #go at a constant speed
     """
     start = time.time()
@@ -328,8 +325,9 @@ def main():
             start = time.time()
     """
     #Go to a certain tick
+    
     while True:
-        if joe.tick >= (10000):
+        if joe.tick >= (86164):
             joe.stats
             break
         else:
