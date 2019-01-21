@@ -9,6 +9,12 @@ building_sell_multiplyer = 4
 upgrades_till_cursor_add = 3
 clicks_per_second = 3
 
+#Zero for no limit
+updates_per_second = 2
+
+#Zero for no end
+ending_tick = 10
+
 class Player:
     def __init__(self, name: str, ai):
 
@@ -20,6 +26,10 @@ class Player:
 
         self.owned_buildings = self.create_BuildingGroups()
         self.tick = 0
+        self.stop = False
+
+        self.ending_tick = ending_tick
+        self.updates_per_second = updates_per_second
     
     def create_BuildingGroups(self):
         self.cursor = Cursor(self, 'Cursor', 15, 0.1)
@@ -103,7 +113,7 @@ class Player:
     def total_cps(self):
         cps = 0
         for building in self.owned_buildings:
-            cps += self.building_count(building)*building.cps_per
+            cps += self.building_count(building)*building.cps_per()
         cps += (clicks_per_second*self.cookies_per_click)
         return cps
 
@@ -114,6 +124,7 @@ class Player:
                 print(building,"(",building.upgrade_count,")",":", self.building_count(building))
         print("Cps:",self.total_cps)
         print("Cookies:", math.floor(self.cookies))
+        print("Tick:",self.tick)
     
     def upgrade_building(self, building: 'BuildingGroup'):
         if building.can_upgrade:
@@ -144,9 +155,10 @@ class Player:
         return cps_add
 
     def update(self):
-        self.tick += 1
-        self.cookies += self.total_cps
-        self.strategy.update()
+        if self.stop != True:
+            self.tick += 1
+            self.cookies += self.total_cps
+            self.strategy.update()
 
 
 class BuildingGroup(ABC):
@@ -169,11 +181,8 @@ class BuildingGroup(ABC):
 
         self.upgrades = upgrades
 
-    @property
-    def cps_per(self) -> int:
-        return self.base_cps*(2**self.upgrade_count)
 
-    def cps_per_after_upgrade(self, extra_upgrades = 1):
+    def cps_per(self, extra_upgrades=0) -> int:
         return self.base_cps*(2**(self.upgrade_count+extra_upgrades))
 
     @property
@@ -254,26 +263,14 @@ class Cursor(BuildingGroup):
         [1, 5, 100, 1000, 100000, 1000000, 10000000, 100000000, 100000000000, 100000000000000, 100000000000000000, 100000000000000000000])
         BuildingGroup.__init__(self, player, name, base_cost, cps, upgrades)
     
-    @property
-    def cps_per(self):
-        if upgrades_till_cursor_add >= self.upgrade_count:#If upgrades work normally
-            cps = self.base_cps*(2**self.upgrade_count)
+    def cps_per(self, extra_upgrades=0):
+        if upgrades_till_cursor_add >= (self.upgrade_count + extra_upgrades):#If upgrades work normally
+            cps = self.base_cps*(2**(self.upgrade_count + extra_upgrades))
         else:#If you need to start add flat amounts
             cps = self.base_cps*(2**upgrades_till_cursor_add)
 
             total_buildings = self._player.non_cursor_buildings
             cps_add = self._player.cookies_per_building()
-            cps += total_buildings*cps_add
-        return cps
-    
-    def cps_per_after_upgrade(self, extra_upgrades = 1):
-        if upgrades_till_cursor_add >= (self.upgrade_count+extra_upgrades):#If upgrades work normally
-            cps = self.base_cps*(2**(self.upgrade_count+extra_upgrades))
-        else:#If you need to start add flat amounts
-            cps = self.base_cps*(2**upgrades_till_cursor_add)
-
-            total_buildings = self._player.non_cursor_buildings
-            cps_add = self._player.cookies_per_building(1)
             cps += total_buildings*cps_add
         return cps
 
@@ -314,26 +311,40 @@ class PathedUpgrades:
 
 def main():
     joe = Player('Joe', ai)
-
-    #go at a constant speed
-    """
-    start = time.time()
+    players = [joe]
     while True:
-        end = time.time()
-        if (end-start)>=.001:
-            joe.update()
-            start = time.time()
-    """
-    #Go to a certain tick
-    
-    while True:
-        if joe.tick >= (86164):
-            joe.stats
+        start = time.time()
+        calling_updates(players)
+        check_break = is_finished(players)
+        if check_break:
+            for player in players:
+                player.stats()
             break
-        else:
-            joe.update()
+        hold(start)
     
-    
-#50664432
-main()
+def calling_updates(players):
+    for player in players:
+        player.update()
+        if ending_tick:
+            if player.tick >= ending_tick:
+                player.stop = True
+                    
 
+def is_finished(players):
+    for player in players:
+        if player.stop == True:
+            del players[0]
+    if players == []:
+        return True
+    else:
+        return False
+
+def hold(start):
+    print((1/updates_per_second)-(time.time()-start))
+    if ((1/updates_per_second)-(time.time()-start))>0:
+        time.sleep((1/updates_per_second)-(time.time()-start))
+
+
+
+
+main()
