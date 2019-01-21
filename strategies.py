@@ -16,7 +16,7 @@ class KagazzieAI(Strategy):
         if self.target == None:
             buildings_time_to_profit, upgrades_time_to_profit = self.times_to_profit()
             self.target = self.choose_target(buildings_time_to_profit, upgrades_time_to_profit)
-        if (self.player.tick % 10000) == 0:
+        if (self.player.tick % 10) == 0:
             self.player.stats()
         self.target = self.attempt_to_buy(self.target)
 
@@ -26,7 +26,7 @@ class KagazzieAI(Strategy):
         return time
     
     def time_to_repay_building(self, building):
-        return (building.next_cost)/building.cps_per
+        return (building.next_cost)/building.cps_per()
     
     def times_to_profit(self):
         buildings_time_to_profit = []
@@ -41,7 +41,7 @@ class KagazzieAI(Strategy):
         return buildings_time_to_profit, upgrades_time_to_profit
     
     def time_to_repay_upgrade(self, building):
-        return int(math.ceil((building.upgrades.next_cost)/((building.cps_per_after_upgrade()-building.cps_per)*self.player.owned_buildings[building])))
+        return int(math.ceil((building.upgrades.next_cost)/((building.cps_per(1)-building.cps_per())*self.player.owned_buildings[building])))
     
     def choose_target(self, buildings_time_to_profit, upgrades_time_to_profit):
         target_time = buildings_time_to_profit[0]
