@@ -86,7 +86,110 @@ class Player:
             self.chance_maker: 0,
             self.fractal_engine: 0
         }
-        
+
+    def create_grandma_upgrades(self):
+         grandma_farm_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.farm :15},
+             {self.grandma:1,
+             self.farm :0.01}
+         )
+         grandma_mine_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.mine :15},
+             {self.grandma:1,
+             self.mine :0.01/2}
+         )
+         grandma_factory_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.factory :15},
+             {self.grandma:1,
+             self.factory :0.01/3}
+         )
+         grandma_bank_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.bank :15},
+             {self.grandma:1,
+             self.bank :0.01/4}
+         )
+         grandma_temple_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.temple :15},
+             {self.grandma:1,
+             self.temple :0.01/5}
+         )
+         grandma_wizard_tower_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.wizard_tower :15},
+             {self.grandma:1,
+             self.wizard_tower :0.01/6}
+         )
+         grandma_shipment_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.shipment :15},
+             {self.grandma:1,
+             self.shipment :0.01/7}
+         )
+         grandma_alchemy_lab_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.alchemy_lab :15},
+             {self.grandma:1,
+             self.alchemy_lab :0.01/8}
+         )
+         grandma_portal_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.portal :15},
+             {self.grandma:1,
+             self.portal :0.01/9}
+         )
+         grandma_time_machine_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.time_machine :15},
+             {self.grandma:1,
+             self.time_machine :0.01/10}
+         )
+         grandma_antimatter_condenser_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.antimatter_condenser :15},
+             {self.grandma:1,
+             self.antimatter_condenser :0.01/11}
+         )
+         grandma_prism_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.prism :15},
+             {self.grandma:1,
+             self.prism :0.01/12}
+         )
+         grandma_chance_maker_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.chance_maker :15},
+             {self.grandma:1,
+             self.chance_maker :0.01/13}
+         )
+         grandma_fractal_engine_upgrade = GrandmaUpgrades(
+             {self.grandma:1,
+             self.fractal_engine :15},
+             {self.grandma:1,
+             self.fractal_engine :0.01/14}
+         )
+         self.grandma_upgrades = [
+             grandma_farm_upgrade,
+             grandma_mine_upgrade,
+             grandma_factory_upgrade,
+             grandma_bank_upgrade,
+             grandma_temple_upgrade,
+             grandma_wizard_tower_upgrade,
+             grandma_shipment_upgrade,
+             grandma_alchemy_lab_upgrade,
+             grandma_portal_upgrade,
+             grandma_time_machine_upgrade,
+             grandma_antimatter_condenser_upgrade,
+             grandma_prism_upgrade,
+             grandma_chance_maker_upgrade,
+             grandma_fractal_engine_upgrade
+             ]
+
+         
     def buy_building(self, building: 'BuildingGroup', amount:int=1):
         if self.cookies < building.multiple_price(amount):
             self.stats()
@@ -134,6 +237,8 @@ class Player:
             building.stats()
             raise Exception("You cannot upgrade this building")
 
+    def buy_grandma_upgrade(self):#TODO
+        pass
     @property
     def cookies_per_click(self):
         return self.non_cursor_buildings*self.cookies_per_building() + 1
@@ -245,7 +350,6 @@ class DefaultBuilding(BuildingGroup):
         upgrades = PathedUpgrades(name+'Upgrades',self, base_cost*base_upgrade_cost_mult)
         BuildingGroup.__init__(self, player, name, base_cost, cps, upgrades)
 
-
 class Cursor(BuildingGroup):
     def __init__(self, 
         player: Player,
@@ -274,6 +378,21 @@ class Cursor(BuildingGroup):
             cps += total_buildings*cps_add
         return cps
 
+class Grandma(BuildingGroup):#TODO
+    def __init__(self, 
+        player: Player,
+        name: str,
+        base_cost: int,
+        cps: int,
+        base_upgrade_cost_mult: int = 10
+        ):
+        
+        upgrades = PathedUpgrades(name+'Upgrades',self, base_cost*base_upgrade_cost_mult)
+        BuildingGroup.__init__(self, player, name, base_cost, cps, upgrades)
+        self.num_grandma_upgrades = 0
+
+    def cps_per(self, extra_upgrades=0) -> int:
+        return self.base_cps*(2**(self.upgrade_count+extra_upgrades+self.num_grandma_upgrades))
 
 class PathedUpgrades:
     def __init__(
@@ -308,7 +427,12 @@ class PathedUpgrades:
             return None
 
 class GrandmaUpgrades:#TODO
-    pass
+    def __init__(self, reqs, mults):
+        self.reqs = reqs
+        self.mults = mults
+
+        self.bought = False
+    
 
 class TotalUpgrades:#TODO
     pass
