@@ -210,7 +210,7 @@ class BuildingGroup(ABC):
         cps: int,
         upgrades: 'PathedUpgrades'
         ):
-        self._player = player
+        self.player = player
 
         self.name = name
 
@@ -227,28 +227,28 @@ class BuildingGroup(ABC):
 
     def cps_per(self, extra_upgrades=0):
         if self.grandma_upgrade.bought:
-            grandma_cps_boost = 1+(self.grandma_upgrade.mults[self]*self._player.owned_buildings[self._player.grandma])
+            grandma_cps_boost = 1+(self.grandma_upgrade.mults[self]*self.player.owned_buildings[self.player.grandma])
             return self.base_cps*(2**(self.upgrade_count+extra_upgrades))*(grandma_cps_boost)
         return self.base_cps*(2**(self.upgrade_count+extra_upgrades))
 
     @property
     def next_cost(self):
-        return math.ceil(self.base_cost*(building_cost_multiplyer**self._player.owned_buildings[self]))
+        return math.ceil(self.base_cost*(building_cost_multiplyer**self.player.owned_buildings[self]))
 
     @property
     def can_upgrade(self) -> bool:
         if self.upgrades.reqs == []:
             return False
-        elif self._player.cookies <= self.upgrades.next_cost:
+        elif self.player.cookies <= self.upgrades.next_cost:
             return False
-        elif self.upgrades.next_req > self._player.building_count(self):
+        elif self.upgrades.next_req > self.player.building_count(self):
             return False
         else:
             return True
 
     @property
     def can_buy(self) -> bool:
-        if self._player.cookies>=self.next_cost:
+        if self.player.cookies>=self.next_cost:
             return True
         else:
             return False
@@ -260,7 +260,7 @@ class BuildingGroup(ABC):
             raise Exception("You cannot upgrade this.")
 
     def multiple_price(self, amount:int):
-        return math.ceil(self.base_cost*(building_cost_multiplyer**(self._player.owned_buildings[self]+amount)-(building_cost_multiplyer**(self._player.owned_buildings[self])))/(0.15))
+        return math.ceil(self.base_cost*(building_cost_multiplyer**(self.player.owned_buildings[self]+amount)-(building_cost_multiplyer**(self.player.owned_buildings[self])))/(0.15))
 
     def stats(self):
         print("\n",self.name)
@@ -317,8 +317,8 @@ class Cursor(BuildingGroup):
         else:#If you need to start add flat amounts
             cps = self.base_cps*(2**upgrades_till_cursor_add)
 
-            total_buildings = self._player.non_cursor_buildings
-            cps_add = self._player.cookies_per_building(extra_upgrades)
+            total_buildings = self.player.non_cursor_buildings
+            cps_add = self.player.cookies_per_building(extra_upgrades)
             cps += total_buildings*cps_add
         return cps
 
@@ -336,7 +336,7 @@ class Grandma(BuildingGroup):
         BuildingGroup.__init__(self, player, name, base_cost, cps, upgrades)
 
     def cps_per(self, extra_upgrades=0):
-        return self.base_cps*(2**(self.upgrade_count+extra_upgrades+self._player.count_grandma_upgrades))
+        return self.base_cps*(2**(self.upgrade_count+extra_upgrades+self.player.count_grandma_upgrades))
         
 
 class PathedUpgrades:
