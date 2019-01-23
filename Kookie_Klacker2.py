@@ -9,10 +9,10 @@ upgrades_till_cursor_add = 3
 clicks_per_second = 3 
 
 #Zero for no speed limit
-updates_per_second = 1
+updates_per_second = 0
 
 #Zero for no end
-ending_tick = 0
+ending_tick = 2000
 
 class Player:
     def __init__(self, name: str, ai):
@@ -409,14 +409,7 @@ def hold(start):
 def main():
     joe = Player('Joe', ai)
     players = [joe]
-    """
-    joe.cookies = 9999999999999999999999999999999999999999
-    joe.buy_building(joe.cursor, 1)
-    print(joe.cursor.cps_per())
-    print(joe.cursor.cps_per(1))
-    joe.cursor.stats
-
-    """
+    
     input("Press enter to start")
     while True:
         start = time.time()
