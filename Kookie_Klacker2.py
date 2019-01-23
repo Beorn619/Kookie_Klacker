@@ -33,7 +33,7 @@ class Player:
     
     def create_BuildingGroups(self):
         self.cursor = Cursor(self, 'Cursor', 15, 0.1)
-        self.grandma = DefaultBuilding(self, 'Grandma', 100.0, 1.0)
+        self.grandma = Grandma(self, 'Grandma', 100.0, 1.0)
         self.farm = DefaultBuilding(self, 'Farm', 1100.0, 8.0)
         self.mine = DefaultBuilding(self, 'Mine', 12000.0, 47.0)
         self.factory = DefaultBuilding(self, 'Factory', 130000.0, 260.0)
@@ -225,11 +225,10 @@ class BuildingGroup(ABC):
         self.grandma_upgrade = None
 
 
-    def cps_per(self, extra_upgrades=0) -> int:
-        if self.grandma_upgrade:
-          if self.grandma_upgrade.bought:
-              grandma_cps_boost = 1+(self.grandma_upgrade.mults[self]*self._player.owned_buildings[self._player.grandma])
-              return self.base_cps*(2**(self.upgrade_count+extra_upgrades))*(grandma_cps_boost)
+    def cps_per(self, extra_upgrades=0):
+        if self.grandma_upgrade.bought:
+            grandma_cps_boost = 1+(self.grandma_upgrade.mults[self]*self._player.owned_buildings[self._player.grandma])
+            return self.base_cps*(2**(self.upgrade_count+extra_upgrades))*(grandma_cps_boost)
         return self.base_cps*(2**(self.upgrade_count+extra_upgrades))
 
     @property
@@ -411,18 +410,7 @@ def main():
     joe = Player('Joe', ai)
     players = [joe]
 
-    joe.cookies = 9999999999999999999999
-    joe.buy_building(joe.farm, 15)
-    joe.buy_building(joe.mine, 15)
-    joe.buy_building(joe.grandma, 1)
-    joe.buy_grandma_upgrade(joe.farm)
-    joe.buy_grandma_upgrade(joe.mine)
-    joe.stats()
-    joe.farm.stats()
-    joe.mine.stats()
-    joe.grandma.stats()
-
-    """
+    
     while True:
         start = time.time()
         calling_updates(players)
@@ -433,7 +421,7 @@ def main():
             break
         if updates_per_second != 0:
             hold(start)
-    """
+    
     
 
 
