@@ -3,13 +3,12 @@ import math, time
 from abc import ABC
 from strategies import KagazzieAI as ai
 
-
 building_cost_multiplyer = 1.15
 building_sell_multiplyer = 4
 upgrades_till_cursor_add = 3
 clicks_per_second = 3
 
-#Zero for no limit
+#Zero for no speed limit
 updates_per_second = 0
 
 #Zero for no end
@@ -25,6 +24,7 @@ class Player:
         self.strategy = strategy
 
         self.owned_buildings = self.create_BuildingGroups()
+        self.grandma_upgrades = self.create_grandma_upgrades()
         self.tick = 0
         self.stop = False
 
@@ -88,106 +88,28 @@ class Player:
         }
 
     def create_grandma_upgrades(self):
-         grandma_farm_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.farm :15},
-             {self.grandma:1,
-             self.farm :0.01}
-         )
-         grandma_mine_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.mine :15},
-             {self.grandma:1,
-             self.mine :0.01/2}
-         )
-         grandma_factory_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.factory :15},
-             {self.grandma:1,
-             self.factory :0.01/3}
-         )
-         grandma_bank_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.bank :15},
-             {self.grandma:1,
-             self.bank :0.01/4}
-         )
-         grandma_temple_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.temple :15},
-             {self.grandma:1,
-             self.temple :0.01/5}
-         )
-         grandma_wizard_tower_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.wizard_tower :15},
-             {self.grandma:1,
-             self.wizard_tower :0.01/6}
-         )
-         grandma_shipment_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.shipment :15},
-             {self.grandma:1,
-             self.shipment :0.01/7}
-         )
-         grandma_alchemy_lab_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.alchemy_lab :15},
-             {self.grandma:1,
-             self.alchemy_lab :0.01/8}
-         )
-         grandma_portal_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.portal :15},
-             {self.grandma:1,
-             self.portal :0.01/9}
-         )
-         grandma_time_machine_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.time_machine :15},
-             {self.grandma:1,
-             self.time_machine :0.01/10}
-         )
-         grandma_antimatter_condenser_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.antimatter_condenser :15},
-             {self.grandma:1,
-             self.antimatter_condenser :0.01/11}
-         )
-         grandma_prism_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.prism :15},
-             {self.grandma:1,
-             self.prism :0.01/12}
-         )
-         grandma_chance_maker_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.chance_maker :15},
-             {self.grandma:1,
-             self.chance_maker :0.01/13}
-         )
-         grandma_fractal_engine_upgrade = GrandmaUpgrades(
-             {self.grandma:1,
-             self.fractal_engine :15},
-             {self.grandma:1,
-             self.fractal_engine :0.01/14}
-         )
-         self.grandma_upgrades = [
-             grandma_farm_upgrade,
-             grandma_mine_upgrade,
-             grandma_factory_upgrade,
-             grandma_bank_upgrade,
-             grandma_temple_upgrade,
-             grandma_wizard_tower_upgrade,
-             grandma_shipment_upgrade,
-             grandma_alchemy_lab_upgrade,
-             grandma_portal_upgrade,
-             grandma_time_machine_upgrade,
-             grandma_antimatter_condenser_upgrade,
-             grandma_prism_upgrade,
-             grandma_chance_maker_upgrade,
-             grandma_fractal_engine_upgrade
-             ]
+        buildings_till_grandma_upgrades = 2
+        grandma_upgrades = []
+        for i in range(0,len(self.buildings)-buildings_till_grandma_upgrades,1):
+            print()
+            self.buildings[i+buildings_till_grandma_upgrades].grandma_upgrade = GrandmaUpgrades(
+                {self.grandma:1,
+                self.buildings[i+buildings_till_grandma_upgrades] :15},
+                {self.grandma:1,
+                self.buildings[i+buildings_till_grandma_upgrades] :0.001/(i+1)},
+                self.buildings[i+buildings_till_grandma_upgrades].upgrades.mults[1]*self.buildings[i+buildings_till_grandma_upgrades].upgrades.base_price
+            )
+            grandma_upgrades.append(self.buildings[i+buildings_till_grandma_upgrades].grandma_upgrade)
+        return grandma_upgrades
+        
+    @property
+    def count_grandma_upgrades(self):
+        count = 0
+        for building in self.buildings:
+            if building.grandma_upgrade:
+                if building.grandma_upgrade.bought:
+                    count += 1
+        return count
 
          
     def buy_building(self, building: 'BuildingGroup', amount:int=1):
@@ -228,6 +150,7 @@ class Player:
         print("Cps:",self.total_cps)
         print("Cookies:", math.floor(self.cookies))
         print("Tick:",self.tick)
+        print("Grandma Upgrades:",self.count_grandma_upgrades)
     
     def upgrade_building(self, building: 'BuildingGroup'):
         if building.can_upgrade:
@@ -237,8 +160,21 @@ class Player:
             building.stats()
             raise Exception("You cannot upgrade this building")
 
-    def buy_grandma_upgrade(self):#TODO
-        pass
+    def buy_grandma_upgrade(self,building):
+        if self.can_buy_grandma_upgrade(building):
+            self.cookies -= building.grandma_upgrade.cost
+            building.grandma_upgrade.bought = True
+
+    def can_buy_grandma_upgrade(self, building):
+        if building.grandma_upgrade == None:
+            return False
+        elif building.grandma_upgrade.bought:
+            return False
+        elif self.cookies < building.grandma_upgrade.cost:
+            return False
+        else:
+            return True
+
     @property
     def cookies_per_click(self):
         return self.non_cursor_buildings*self.cookies_per_building() + 1
@@ -286,8 +222,14 @@ class BuildingGroup(ABC):
 
         self.upgrades = upgrades
 
+        self.grandma_upgrade = None
+
 
     def cps_per(self, extra_upgrades=0) -> int:
+        if self.grandma_upgrade:
+          if self.grandma_upgrade.bought:
+              grandma_cps_boost = 1+(self.grandma_upgrade.mults[self]*self._player.owned_buildings[self._player.grandma])
+              return self.base_cps*(2**(self.upgrade_count+extra_upgrades))*(grandma_cps_boost)
         return self.base_cps*(2**(self.upgrade_count+extra_upgrades))
 
     @property
@@ -326,13 +268,15 @@ class BuildingGroup(ABC):
         print("Base Cost:",self.base_cost)
         print("Upgrade Count:",self.upgrade_count)
         print("Base Cps:",self.base_cps)
-        print("Cps Per:", self.cps_per)
+        print("Cps Per:", self.cps_per())
         print("Next Cost:", self.next_cost)
         print("Base Upgrade Price:",self.upgrades.base_price)
         print("Next Upgrade Cost Multiplyer:", self.upgrades.next_mult)
         print("Next Upgrade Req:", self.upgrades.next_req)
         print("Can Buy:", self.can_buy)
         print("Can Upgrade:", self.can_upgrade)
+        if self.grandma_upgrade:
+            print("Bought Grandma Upgrade:", self.grandma_upgrade.bought)
 
     def __str__(self):
         return self.name
@@ -349,6 +293,7 @@ class DefaultBuilding(BuildingGroup):
         
         upgrades = PathedUpgrades(name+'Upgrades',self, base_cost*base_upgrade_cost_mult)
         BuildingGroup.__init__(self, player, name, base_cost, cps, upgrades)
+
 
 class Cursor(BuildingGroup):
     def __init__(self, 
@@ -378,6 +323,7 @@ class Cursor(BuildingGroup):
             cps += total_buildings*cps_add
         return cps
 
+
 class Grandma(BuildingGroup):#TODO
     def __init__(self, 
         player: Player,
@@ -389,10 +335,10 @@ class Grandma(BuildingGroup):#TODO
         
         upgrades = PathedUpgrades(name+'Upgrades',self, base_cost*base_upgrade_cost_mult)
         BuildingGroup.__init__(self, player, name, base_cost, cps, upgrades)
-        self.num_grandma_upgrades = 0
 
-    def cps_per(self, extra_upgrades=0) -> int:
-        return self.base_cps*(2**(self.upgrade_count+extra_upgrades+self.num_grandma_upgrades))
+    def cps_per(self, extra_upgrades=0):
+        return self.base_cps*(2**(self.upgrade_count+extra_upgrades+self._player.count_grandma_upgrades))
+        
 
 class PathedUpgrades:
     def __init__(
@@ -426,16 +372,18 @@ class PathedUpgrades:
         else:
             return None
 
-class GrandmaUpgrades:#TODO
-    def __init__(self, reqs, mults):
+
+class GrandmaUpgrades:
+    def __init__(self, reqs, mults, cost):
         self.reqs = reqs
         self.mults = mults
-
+        self.cost = cost
         self.bought = False
-    
 
-class TotalUpgrades:#TODO
+
+class IncomeMultiplyerUpgrades:#TODO
     pass
+
 
 def calling_updates(players):
     for player in players:
@@ -443,7 +391,8 @@ def calling_updates(players):
         if ending_tick:
             if player.tick >= ending_tick:
                 player.stop = True
-                    
+
+
 def is_finished(players):
     stop = True
     for player in players:
@@ -452,13 +401,28 @@ def is_finished(players):
             break
     return stop
 
+
 def hold(start):
     if ((1/updates_per_second)-(time.time()-start))>0:
         time.sleep((1/updates_per_second)-(time.time()-start))
 
+
 def main():
     joe = Player('Joe', ai)
     players = [joe]
+
+    joe.cookies = 9999999999999999999999
+    joe.buy_building(joe.farm, 15)
+    joe.buy_building(joe.mine, 15)
+    joe.buy_building(joe.grandma, 1)
+    joe.buy_grandma_upgrade(joe.farm)
+    joe.buy_grandma_upgrade(joe.mine)
+    joe.stats()
+    joe.farm.stats()
+    joe.mine.stats()
+    joe.grandma.stats()
+
+    """
     while True:
         start = time.time()
         calling_updates(players)
@@ -469,6 +433,7 @@ def main():
             break
         if updates_per_second != 0:
             hold(start)
+    """
     
 
 
