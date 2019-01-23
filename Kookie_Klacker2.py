@@ -111,7 +111,6 @@ class Player:
                     count += 1
         return count
 
-         
     def buy_building(self, building: 'BuildingGroup', amount:int=1):
         if self.cookies < building.multiple_price(amount):
             self.stats()
@@ -164,6 +163,9 @@ class Player:
         if self.can_buy_grandma_upgrade(building):
             self.cookies -= building.grandma_upgrade.cost
             building.grandma_upgrade.bought = True
+
+    def cps_after_grandma_upgrade(self, building):#TODO
+        pass
 
     def can_buy_grandma_upgrade(self, building):
         if building.grandma_upgrade == None:
@@ -323,7 +325,7 @@ class Cursor(BuildingGroup):
         return cps
 
 
-class Grandma(BuildingGroup):#TODO
+class Grandma(BuildingGroup):
     def __init__(self, 
         player: Player,
         name: str,
