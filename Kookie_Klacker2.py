@@ -6,13 +6,13 @@ from strategies import KagazzieAI as ai
 building_cost_multiplyer = 1.15
 building_sell_multiplyer = 4
 upgrades_till_cursor_add = 3
-clicks_per_second = 3
+clicks_per_second = 3 
 
 #Zero for no speed limit
-updates_per_second = 0
+updates_per_second = 1
 
 #Zero for no end
-ending_tick = 100
+ending_tick = 0
 
 class Player:
     def __init__(self, name: str, ai):
@@ -91,7 +91,6 @@ class Player:
         buildings_till_grandma_upgrades = 2
         grandma_upgrades = []
         for i in range(0,len(self.buildings)-buildings_till_grandma_upgrades,1):
-            print()
             self.buildings[i+buildings_till_grandma_upgrades].grandma_upgrade = GrandmaUpgrades(
                 {self.grandma:1,
                 self.buildings[i+buildings_till_grandma_upgrades] :15},
@@ -164,9 +163,6 @@ class Player:
             self.cookies -= building.grandma_upgrade.cost
             building.grandma_upgrade.bought = True
 
-    def cps_after_grandma_upgrade(self, building):#TODO
-        pass
-
     def can_buy_grandma_upgrade(self, building):
         if building.grandma_upgrade == None:
             return False
@@ -203,6 +199,8 @@ class Player:
             self.cookies += self.total_cps
             self.strategy.update()
 
+    def count(self, building):
+        return self.owned_buildings[building]
 
 class BuildingGroup(ABC):
     def __init__(self, 
@@ -320,7 +318,7 @@ class Cursor(BuildingGroup):
             cps = self.base_cps*(2**upgrades_till_cursor_add)
 
             total_buildings = self._player.non_cursor_buildings
-            cps_add = self._player.cookies_per_building()
+            cps_add = self._player.cookies_per_building(extra_upgrades)
             cps += total_buildings*cps_add
         return cps
 
@@ -411,8 +409,15 @@ def hold(start):
 def main():
     joe = Player('Joe', ai)
     players = [joe]
+    """
+    joe.cookies = 9999999999999999999999999999999999999999
+    joe.buy_building(joe.cursor, 1)
+    print(joe.cursor.cps_per())
+    print(joe.cursor.cps_per(1))
+    joe.cursor.stats
 
-    
+    """
+    input("Press enter to start")
     while True:
         start = time.time()
         calling_updates(players)
