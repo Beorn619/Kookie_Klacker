@@ -29,10 +29,13 @@ class KagazzieAI(Strategy):
         return time
     
     def building_roi(self, obj):
-        return obj.next_cost/obj.cps_per()
+        return obj.next_cost/obj.cps_per
     
     def upgrade_roi(self, obj):
-        return (obj.cps_per(1) - obj.cps_per())/obj.upgrades.next_cost
+        if obj.name != 'Cursor':
+            return (obj.next_cps_per(1) - obj.cps_per)/obj.upgrades.next_cost
+        else:
+            return ((obj.next_cps_per(1) +  (self.player.cookies_per_click_mouse(1)*self.player.clicks_per_second)) - (obj.cps_per+(self.player.cookies_per_click_mouse()*self.player.clicks_per_second)))/obj.upgrades.next_cost
     
     def grandma_upgrade_roi(self, obj):
         pass
