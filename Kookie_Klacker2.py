@@ -6,13 +6,15 @@ from strategies import KagazzieAI as ai
 building_cost_multiplyer = 1.15
 building_sell_multiplyer = 4
 upgrades_till_cursor_add = 3
-clicks_per_second = 3 
+clicks_per_second = 3
+total_income_upgrade_base_cost = 999999
+
 
 #Zero for no speed limit
 updates_per_second = 0
 
 #Zero for no end
-ending_tick = 86400
+ending_tick = 2750
 
 class Player:
     def __init__(self, name: str, ai):
@@ -30,6 +32,7 @@ class Player:
 
         self.ending_tick = ending_tick
         self.updates_per_second = updates_per_second
+        self.clicks_per_second = clicks_per_second
     
     def create_BuildingGroups(self):
         self.cursor = Cursor(self, 'Cursor', 15, 0.1)
@@ -100,7 +103,12 @@ class Player:
             )
             grandma_upgrades.append(self.buildings[i+buildings_till_grandma_upgrades].grandma_upgrade)
         return grandma_upgrades
-        
+    
+    def create_income_multiplyer_upgrades(self):#TODO
+        #for loop with patern. Then two lists for outliers. Everything ends up in a sorted list based on price.
+        pass
+
+
     @property
     def count_grandma_upgrades(self):
         count = 0
@@ -136,8 +144,8 @@ class Player:
     def total_cps(self):
         cps = 0
         for building in self.owned_buildings:
-            cps += self.building_count(building)*building.cps_per()
-        cps += (clicks_per_second*self.cookies_per_click)
+            cps += self.building_count(building)*building.cps_per
+        cps += (clicks_per_second*self.cookies_per_click())
         return cps
 
     def stats(self):
@@ -165,7 +173,7 @@ class Player:
 
     @property
     def cookies_per_click(self) -> int:
-        return self.non_cursor_buildings*self.cookies_per_building() + 1
+        return self.cookies_per_click_mouse
     
     @property
     def non_cursor_buildings(self) -> int:
@@ -174,12 +182,22 @@ class Player:
             if building.name != 'Cursor':
                 total_buildings += self.building_count(building)
         return total_buildings
-    
-    def cookies_per_building(self) -> float:
-        """Relevent to Cursor and Cookies per click"""
+
+    def cookies_per_click_mouse(self, extra_upgrades=0):
+        if upgrades_till_cursor_add >= (self.cursor.upgrade_count+extra_upgrades):
+            cps = (2**(self.cursor.upgrade_count+extra_upgrades))
+        else:
+            cps = (2**upgrades_till_cursor_add)
+
+            total_buildings = self.non_cursor_buildings
+            cps_add = self.cookies_per_building(extra_upgrades)
+            cps += total_buildings*cps_add
+        return cps
+
+    def cookies_per_building(self, extra_upgrades=0) -> float:
         cps_add = 0
         cps_add_constants = (0.1, 0.5, 5, 50, 500, 5000, 50000, 500000, 5000000)
-        for i in range(0,(self.cursor.upgrade_count)-upgrades_till_cursor_add,1):
+        for i in range(0,(self.cursor.upgrade_count+extra_upgrades)-upgrades_till_cursor_add,1):
             cps_add += cps_add_constants[i]
         return cps_add
 
@@ -188,7 +206,6 @@ class Player:
             self.tick += 1
             self.cookies += self.total_cps
             self.strategy.update()
-
 
 
 class BuildingGroup(ABC):
@@ -221,7 +238,7 @@ class BuildingGroup(ABC):
         return self.base_cps*(2**(self.upgrade_count))
 
     def next_cps_per(self, extra_upgrades: int) -> float:
-        if self.upgrade_count+extra_upgrades < len(self.upgrades.reqs)-1:
+        if self.upgrade_count+extra_upgrades < len(self.upgrades.reqs):
             self.upgrade_count +=extra_upgrades
             cps = self.cps_per
             self.upgrade_count-=extra_upgrades
@@ -330,9 +347,17 @@ class Cursor(BuildingGroup):
             cps = self.base_cps*(2**upgrades_till_cursor_add)
 
             total_buildings = self.player.non_cursor_buildings
-            cps_add = self.player.cookies_per_building()
+            cps_add = self.cookies_per_building()
             cps += total_buildings*cps_add
         return cps
+    
+
+    def cookies_per_building(self) -> float:
+        cps_add = 0
+        cps_add_constants = (0.1, 0.5, 5, 50, 500, 5000, 50000, 500000, 5000000)
+        for i in range(0,(self.upgrade_count)-upgrades_till_cursor_add,1):
+            cps_add += cps_add_constants[i]
+        return cps_add
 
 
 class Grandma(BuildingGroup):
@@ -350,7 +375,7 @@ class Grandma(BuildingGroup):
     @property
     def cps_per(self) -> int:
         return self.base_cps*(2**(self.upgrade_count+self.player.count_grandma_upgrades))
-        
+
 
 class PathedUpgrades:
     def __init__(
@@ -393,8 +418,32 @@ class GrandmaUpgrades:
         self.bought = False
 
 
-class IncomeMultiplyerUpgrades:#TODO
-    pass
+class IncomeMultiplyerUpgrade:
+    def __init__(self, cost_mult: int, mult: float, player: Player):
+        self.cost = cost_mult * total_income_upgrade_base_cost
+        self.mult = mult
+        self.bought = False
+        self.player = player
+    
+    @property
+    def cps_after_buy(self):
+        if self.bought == False:
+            return self.player.total_cps*(1+self.mult)
+        else:
+            self.player.stats()
+            raise Exception("You cannot see cps after you buy this because it is already bought")
+    
+    @property
+    def can_buy(self):
+        if self.bought == True:
+            return False
+        elif self.cost > self.player.cookies:
+            return False
+        else:
+            return True
+
+
+
 
 
 def calling_updates(players):
@@ -436,6 +485,5 @@ def main():
         if updates_per_second != 0:
             hold(start)
     
-
 
 main()
