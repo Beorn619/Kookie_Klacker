@@ -7,14 +7,14 @@ building_cost_multiplyer = 1.15
 building_sell_multiplyer = 4
 upgrades_till_cursor_add = 3
 clicks_per_second = 3
-total_income_upgrade_base_cost = 999999
+total_income_upgrade_base_cost = 1000000
 
 
 #Zero for no speed limit
 updates_per_second = 0
 
 #Zero for no end
-ending_tick = 2750
+ending_tick = 5000
 
 class Player:
     def __init__(self, name: str, ai):
@@ -33,7 +33,8 @@ class Player:
         self.ending_tick = ending_tick
         self.updates_per_second = updates_per_second
         self.clicks_per_second = clicks_per_second
-    
+
+        self.create_income_multiplyer_upgrades()
     def create_BuildingGroups(self):
         self.cursor = Cursor(self, 'Cursor', 15, 0.1)
         self.grandma = Grandma(self, 'Grandma', 100.0, 1.0)
@@ -105,9 +106,7 @@ class Player:
         return grandma_upgrades
     
     def create_income_multiplyer_upgrades(self):#TODO
-        #for loop with patern. Then two lists for outliers. Everything ends up in a sorted list based on price.
         pass
-
 
     @property
     def count_grandma_upgrades(self):
@@ -419,8 +418,9 @@ class GrandmaUpgrades:
 
 
 class IncomeMultiplyerUpgrade:
-    def __init__(self, cost_mult: int, mult: float, player: Player):
-        self.cost = cost_mult * total_income_upgrade_base_cost
+    def __init__(self, base_cost: int, mult: float, player: Player):
+        self.base_cost = base_cost
+        self.next_cost = base_cost
         self.mult = mult
         self.bought = False
         self.player = player
@@ -437,7 +437,7 @@ class IncomeMultiplyerUpgrade:
     def can_buy(self):
         if self.bought == True:
             return False
-        elif self.cost > self.player.cookies:
+        elif self.next_cost > self.player.cookies:
             return False
         else:
             return True
