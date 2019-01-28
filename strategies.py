@@ -20,7 +20,7 @@ class KagazzieAI(Strategy):
 
         self.attempt_buy()
 
-        if self.player.tick % 500 == 0:
+        if self.player.tick % 2000 == 0:
             self.player.stats()
             
     
@@ -32,13 +32,10 @@ class KagazzieAI(Strategy):
         return obj.next_cost/obj.cps_per
     
     def upgrade_roi(self, obj):
-        if obj.name != 'Cursor':
-            return (obj.next_cps_per(1) - obj.cps_per)/obj.upgrades.next_cost
-        else:
-            return ((obj.next_cps_per(1) +  (self.player.cookies_per_click_mouse(1)*self.player.clicks_per_second)) - (obj.cps_per+(self.player.cookies_per_click_mouse()*self.player.clicks_per_second)))/obj.upgrades.next_cost
+        return (obj.next_cps_per(1) - obj.cps_per)/obj.upgrades.next_cost
     
     def grandma_upgrade_roi(self, obj):
-        pass
+        return (self.player.cps_after_grandma_upgrade(obj) - self.player.total_cps)/obj.grandma_upgrade.next_cost
     
     def income_upgrade_roi(self, obj):
         pass
@@ -46,10 +43,10 @@ class KagazzieAI(Strategy):
     def choose_target(self):
         building_times = []
         upgrade_times = []
-        #grandma_upgrade_times = []
+        grandma_upgrade_times = []
         #income_upgrade_times = []
 
-        purchases = [building_times, upgrade_times]
+        purchases = [building_times, upgrade_times, grandma_upgrade_times]
 
         for building in self.player.buildings:
             building_times.append([math.ceil(self.time_to_buy(building)+self.building_roi(building)), building, 'Building'])
@@ -57,6 +54,13 @@ class KagazzieAI(Strategy):
                 upgrade_times.append([math.ceil(self.time_to_buy(building.upgrades)+self.upgrade_roi(building)), building, 'Upgrade'])
             else:
                 pass#Make this calculate ROI on the Quickest path to upgrade TODO
+            
+            if building.grandma_upgrade:
+                if (building.grandma_upgrade.bought == False) and (self.player.building_count(self.player.grandma)>=1) and (self.player.building_count(building)>building.grandma_upgrade.reqs[building]):
+                    grandma_upgrade_times.append([self.time_to_buy(building.grandma_upgrade)+self.grandma_upgrade_roi(building), building, 'Grandma Upgrade'])
+                    
+
+            
         for group in purchases:
             group.sort(key=lambda tup: tup[0])
         
@@ -82,5 +86,11 @@ class KagazzieAI(Strategy):
         elif self.target_type == 'Upgrade':
             if self.target.can_upgrade:
                 self.player.upgrade_building(self.target)
+                self.target = None
+                self.target_type = None
+            
+        elif self.target_type == 'Grandma Upgrade':
+            if self.target.can_buy_grandma_upgrade:
+                self.player.buy_grandma_upgrade(self.target)
                 self.target = None
                 self.target_type = None
