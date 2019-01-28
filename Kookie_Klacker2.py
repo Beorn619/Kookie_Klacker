@@ -122,7 +122,7 @@ class Player:
         if self.cookies < building.multiple_price(amount):
             self.stats()
             building.stats()
-            raise Exception("You do not have enough cookies to buy this building")
+            raise Exception("You do not have enough cookies to buy this building.")
             
         self.cookies -= building.multiple_price(amount)
         self.owned_buildings[building] += amount
@@ -131,7 +131,7 @@ class Player:
         if self.building_count(building) == 0:
             self.stats()
             building.stats()
-            raise Exception("You do not have enough of thi building to sell")
+            raise Exception("You do not have enough of this building to sell.")
             
         
         self.cookies += building.multiple_price(amount)/4
@@ -164,7 +164,7 @@ class Player:
         else:
             self.stats()
             building.stats()
-            raise Exception("You cannot upgrade this building")
+            raise Exception("You cannot upgrade this building.")
 
     def buy_grandma_upgrade(self, building: 'BuildingGroup'):
         if building.can_buy_grandma_upgrade:
@@ -211,11 +211,11 @@ class Player:
         if building.grandma_upgrade == None:
             self.stats()
             building.stats()
-            raise Exception("dont do that")
+            raise Exception("You do not have any grandma upgrades.")
         elif building.grandma_upgrade.bought == True:
             self.stats()
             building.stats()
-            raise Exception("Stop")
+            raise Exception("You have already bought that grandma upgrade.")
         building.grandma_upgrade.bought = True
         cps = self.total_cps
         building.grandma_upgrade.bought = False
@@ -260,7 +260,7 @@ class BuildingGroup(ABC):
         else:
             self.player.stats()
             self.stats()
-            raise Exception("You are trying to estimate the cps with to many upgrades")
+            raise Exception("You are trying to estimate the cps with too many upgrades.")
     
     @property
     def next_cost(self) -> int:
@@ -447,7 +447,7 @@ class IncomeMultiplyerUpgrade:
             return self.player.total_cps*(1+self.mult)
         else:
             self.player.stats()
-            raise Exception("You cannot see cps after you buy this because it is already bought")
+            raise Exception("You cannot see cps after you buy this because it is already bought.")
     
     @property
     def can_buy(self):
@@ -487,7 +487,7 @@ def main():
     players = [joe]
 
     
-    input("\nPress Enter To Start")
+    input("\nPress Enter To Start.")
     while True:
         start = time.time()
         calling_updates(players)
