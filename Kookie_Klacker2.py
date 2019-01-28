@@ -14,7 +14,7 @@ total_income_upgrade_base_cost = 1000000
 updates_per_second = 0
 
 #Zero for no end
-ending_tick = 5000
+ending_tick = 86400
 
 class Player:
     def __init__(self, name: str, ai):
@@ -35,6 +35,7 @@ class Player:
         self.clicks_per_second = clicks_per_second
 
         self.create_income_multiplyer_upgrades()
+   
     def create_BuildingGroups(self):
         self.cursor = Cursor(self, 'Cursor', 15, 0.1)
         self.grandma = Grandma(self, 'Grandma', 100.0, 1.0)
@@ -145,7 +146,7 @@ class Player:
         for building in self.owned_buildings:
             cps += self.building_count(building)*building.cps_per
         cps += (clicks_per_second*self.cookies_per_click())
-        return cps
+        return round(cps, len(str(round(cps)))+1)
 
     def stats(self):
         print("\n",self.name)
@@ -205,6 +206,20 @@ class Player:
             self.tick += 1
             self.cookies += self.total_cps
             self.strategy.update()
+
+    def cps_after_grandma_upgrade(self, building: 'BuildingGroup') -> float:
+        if building.grandma_upgrade == None:
+            self.stats()
+            building.stats()
+            raise Exception("dont do that")
+        elif building.grandma_upgrade.bought == True:
+            self.stats()
+            building.stats()
+            raise Exception("Stop")
+        building.grandma_upgrade.bought = True
+        cps = self.total_cps
+        building.grandma_upgrade.bought = False
+        return cps
 
 
 class BuildingGroup(ABC):
@@ -282,6 +297,7 @@ class BuildingGroup(ABC):
 
     def upgrade(self):
         if self.can_upgrade:
+            self.player.cookies -= self.upgrades.next_cost
             self.upgrade_count += 1
         else:
             raise Exception("You cannot upgrade this.")
@@ -414,8 +430,8 @@ class GrandmaUpgrades:
         self.reqs = reqs
         self.mults = mults
         self.cost = cost
+        self.next_cost = cost
         self.bought = False
-
 
 class IncomeMultiplyerUpgrade:
     def __init__(self, base_cost: int, mult: float, player: Player):
@@ -441,8 +457,6 @@ class IncomeMultiplyerUpgrade:
             return False
         else:
             return True
-
-
 
 
 
