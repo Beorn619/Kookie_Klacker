@@ -498,6 +498,3 @@ def main():
             break
         if updates_per_second != 0:
             hold(start)
-    
-
-main()
